@@ -986,7 +986,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d693de701f8c08140a5a8e64b089062c, type: 2}
   - {fileID: 11400000, guid: 22bc8b1131242ca4d87efeb403e11959, type: 2}
   - {fileID: 11400000, guid: d56a4a083363ef14592fa627c1da9e5b, type: 2}
-  currentCardGameObjects: []
   spawnPointsList:
   - {fileID: 1619937299}
   - {fileID: 185196211}
@@ -1004,8 +1003,6 @@ MonoBehaviour:
   - {fileID: 424928329}
   - {fileID: 1111094004}
   - {fileID: 102250115}
-  selectedCards: []
-  spawnRandomValue: -1
   randomValCard4: 
   randomValCard6: 
   randomValCard8: 

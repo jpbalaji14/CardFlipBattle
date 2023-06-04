@@ -15,10 +15,10 @@ public class CardSpawner : MonoBehaviour
     public Transform cardHolder;
     public int cardsCount;
     public List<CardData> cardDataSO = new List<CardData>();
-    public List<GameObject> currentCardGameObjects=new List<GameObject>();   
     public List<Transform> spawnPointsList;
-    public List<GameObject> selectedCards;
-    public float spawnRandomValue;
+    private List<GameObject> selectedCards;
+    private float spawnRandomValue;
+    private List<GameObject> currentCardGameObjects=new List<GameObject>();   
 
     public List<int> randomValCard4=new List<int>(); 
     public List<int> randomValCard6 = new List<int>();
@@ -53,6 +53,7 @@ public class CardSpawner : MonoBehaviour
         if (testing)
         {
             spawnRandomValue = -1;
+            DeleteRandomCards();
         }
         if(spawnRandomValue == -1)
         {
@@ -63,6 +64,7 @@ public class CardSpawner : MonoBehaviour
         }
         else
         {
+            DeleteRandomCards();
             DeleteCards();
         }
 
@@ -185,6 +187,16 @@ public class CardSpawner : MonoBehaviour
                 ClearCards(cards16.spawnPositionList);
                 break;
         }
+    }
+    
+    void DeleteRandomCards()
+    {
+        randomValCard4.Clear();
+        randomValCard6.Clear();
+        randomValCard8.Clear();
+        randomValCard10.Clear();
+        randomValCard12.Clear(); 
+        randomValCard16.Clear();
     }
     void ClearCards(List<Transform> spawnPositions)
     {

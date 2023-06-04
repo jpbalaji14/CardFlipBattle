@@ -24,6 +24,6 @@ public class Card : MonoBehaviour
     {
         cardPower = cardDataSo.cardPower;
         cardLevel = cardDataSo.cardLevel;
-        //cardMat.material = cardDataSo.cardMaterial;
+        cardMat.material = cardDataSo.cardMaterial;
     }
 }

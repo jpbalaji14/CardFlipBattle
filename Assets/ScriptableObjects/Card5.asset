@@ -16,4 +16,4 @@ MonoBehaviour:
   cardType: 0
   cardLevel: 5
   cardPower: 5
-  cardMaterial: {fileID: 0}
+  cardMaterial: {fileID: 2100000, guid: 46ad3cd31b496144886ebae2e9540f3f, type: 2}
