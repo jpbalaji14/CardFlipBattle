@@ -73,6 +73,7 @@ public class CoinToss : MonoBehaviour
         this.GetComponent<Animator>().SetBool("Toss_Tails", false);
         this.GetComponent<Animator>().Play("Toss_Idle");
         GameManager.Instance.isOpponentInteracting = true;
+        GameManager.Instance.isPlayerInteracting = true;
         this.gameObject.SetActive(false);
     }
 }

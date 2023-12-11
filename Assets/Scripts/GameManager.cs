@@ -6,7 +6,6 @@ using TMPro;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
 using Random = UnityEngine.Random;
-
 [Serializable]
 public class CardCombo 
 {
@@ -36,6 +35,10 @@ public class GameManager : MonoBehaviour
     public GameObject gameResult;
     public GameObject playerWinText;
     public GameObject opponentWinText;
+    public Transform playerAttackPoint;
+    public Transform opponentAttackPoint;
+    public Transform playerPosition;
+    public Transform opponentPosition;
     // Start is called before the first frame update
     void Awake()
     {
@@ -135,8 +138,8 @@ public class GameManager : MonoBehaviour
             isPlayerInteracting = false;
             if (cardCombo[0].cardName == cardCombo[1].cardName)
             {
-                cardCombo[0].cardScript.CardMatched();
-                cardCombo[1].cardScript.CardMatched();
+                StartCoroutine(cardCombo[0].cardScript.CardMatched());
+                StartCoroutine(cardCombo[1].cardScript.CardMatched());
 
                 Invoke(nameof(OnCardMatched), 1f);
                 
@@ -159,9 +162,6 @@ public class GameManager : MonoBehaviour
 
     void OnCardMatched()
     {
-        cardCombo[0].cardTransform.gameObject.SetActive(false);
-        cardCombo[1].cardTransform.gameObject.SetActive(false);
-
         if (isPlayerTurn)
         {
             opponentHealth -= cardCombo[0].cardScore;
@@ -172,6 +172,8 @@ public class GameManager : MonoBehaviour
             playerHealth -= cardCombo[0].cardScore;
             playerHealth -= cardCombo[1].cardScore;
         }
+
+
         cardGameObjectList.Remove(cardCombo[0].cardGameObject);
         cardGameObjectList.Remove(cardCombo[1].cardGameObject);
 

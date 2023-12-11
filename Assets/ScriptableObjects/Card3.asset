@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Card3
   m_EditorClassIdentifier: 
   cardName: Card3
-  cardItemGameObject: {fileID: 0}
+  cardItemGameObject: {fileID: 2323091425320526991, guid: f497ae8f3e5eb2143b9b87aa2979b7d9,
+    type: 3}
   cardType: 0
   cardLevel: 3
   cardPower: 3

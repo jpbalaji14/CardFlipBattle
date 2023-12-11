@@ -1,7 +1,10 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
+using DG.Tweening;
 
 public class Card : MonoBehaviour
 {
@@ -11,6 +14,8 @@ public class Card : MonoBehaviour
     public float cardPower;
     public int cardLevel;
     public GameObject CardHighlight;
+    public Transform cardItemSpawnPoint;
+    public GameObject cardGameObject;
 
     public void CardSetUp()
     {
@@ -18,6 +23,7 @@ public class Card : MonoBehaviour
         cardPower = cardDataSo.cardPower;
         cardLevel = cardDataSo.cardLevel;
         cardMat.material = cardDataSo.cardMaterial;
+        cardGameObject = Instantiate(cardDataSo.cardItemGameObject, cardItemSpawnPoint);
     }
 
     public void CardSelect()
@@ -44,9 +50,33 @@ public class Card : MonoBehaviour
     {
         GameManager.Instance.CardMatchValidation();
     }
-    public void CardMatched()
+    public IEnumerator CardMatched()
     {
         Debug.Log("Card Matched");
+
+        if (GameManager.Instance.isPlayerTurn)
+        {
+            cardItemSpawnPoint.GetChild(0).transform.DOMove(GameManager.Instance.playerAttackPoint.position, 0.5f)
+                .SetEase(Ease.Linear);
+
+            yield return new WaitForSeconds(0.5f);
+
+            cardItemSpawnPoint.GetChild(0).transform.DOMove(GameManager.Instance.opponentPosition.position, 1)
+                .SetEase(Ease.Linear);
+        }
+        else
+        {
+            cardItemSpawnPoint.GetChild(0).transform.DOMove(GameManager.Instance.opponentAttackPoint.position, 0.5f)
+                .SetEase(Ease.Linear);
+
+            yield return new WaitForSeconds(0.5f);
+
+            cardItemSpawnPoint.GetChild(0).transform.DOMove(GameManager.Instance.playerPosition.position, 1)
+                .SetEase(Ease.Linear);
+        }
+        yield return new WaitForSeconds(1.5f);
+
+        this.gameObject.SetActive(false);
     }
     public void CardNotMatched()
     {
