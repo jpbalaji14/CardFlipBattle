@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using TMPro;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -13,6 +14,7 @@ public class CardCombo
     public Card cardScript;
     public GameObject cardGameObject;
     public string cardName;
+    public float cardScore;
 }
 
 public class GameManager : MonoBehaviour
@@ -27,8 +29,15 @@ public class GameManager : MonoBehaviour
     public bool isPlayerInteracting=true;
     public int OppSelectIndex=-1;
     public int OppSelectIndex2=-1;
+    public float playerHealth;
+    public float opponentHealth; 
+    public TextMeshProUGUI playerHealthText;
+    public TextMeshProUGUI opponentHealthText; 
+    public GameObject gameResult;
+    public GameObject playerWinText;
+    public GameObject opponentWinText;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (Instance == null)
         {
@@ -41,6 +50,25 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        playerHealthText.text = playerHealth.ToString();
+        opponentHealthText.text = opponentHealth.ToString();
+        if(playerHealth <= 0)
+        {
+            gameResult.SetActive(true);
+            playerHealth = 0;
+            opponentWinText.SetActive(true);
+            isPlayerInteracting = false;
+            isOpponentInteracting = false;
+        }
+        else if(opponentHealth <= 0)
+        {
+            gameResult.SetActive(true);
+            opponentHealth = 0;
+            playerWinText.SetActive(true);
+            isPlayerInteracting = false;
+            isOpponentInteracting = false;
+        }
+
         if (Input.GetMouseButtonDown(0) && isPlayerTurn && isPlayerInteracting)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -134,6 +162,16 @@ public class GameManager : MonoBehaviour
         cardCombo[0].cardTransform.gameObject.SetActive(false);
         cardCombo[1].cardTransform.gameObject.SetActive(false);
 
+        if (isPlayerTurn)
+        {
+            opponentHealth -= cardCombo[0].cardScore;
+            opponentHealth -= cardCombo[1].cardScore;
+        }
+        else
+        {
+            playerHealth -= cardCombo[0].cardScore;
+            playerHealth -= cardCombo[1].cardScore;
+        }
         cardGameObjectList.Remove(cardCombo[0].cardGameObject);
         cardGameObjectList.Remove(cardCombo[1].cardGameObject);
 

@@ -28,6 +28,7 @@ public class Card : MonoBehaviour
         combo.cardScript = this;
         combo.cardGameObject = this.gameObject;
         combo.cardTransform = this.gameObject.transform.parent;
+        combo.cardScore = cardPower;
         GameManager.Instance.cardCombo.Add(combo);
         Debug.Log(combo.cardName + "Selected");
         if (GameManager.Instance.isOpponentTurn)
