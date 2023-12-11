@@ -34,11 +34,12 @@ public class CardSpawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GameManager.Instance.cardSpawner = this;
         CreateSpawnPoints();
     }
 
     [ContextMenu("SpawnCards")]
-    void CreateSpawnPoints()
+    public void CreateSpawnPoints()
     {
         DeleteRandomCards();
         ChooseCardType();
@@ -316,10 +317,11 @@ public class CardSpawner : MonoBehaviour
         for (int i = 0; i < spawnPosList.Count; i++)
         {
             float randomId = Random.Range(0,currentCardGameObjects.Count);
-            //Debug.Log("RID: " + randomId + "CC: "+ currentCardGameObjects.Count);
             spawnPosList[i].gameObject.SetActive(true);
-            Instantiate(currentCardGameObjects[(int)randomId], spawnPosList[i]);
+            GameObject cardGameObj =Instantiate(currentCardGameObjects[(int)randomId], spawnPosList[i]);
+            cardGameObj.name = cardGameObj.GetComponent<Card>().cardName;
             currentCardGameObjects.RemoveAt((int)randomId);
+            GameManager.Instance.cardGameObjectList.Add(cardGameObj);
         }
         if (testSpawnArea.childCount > 0)
         {

@@ -11,20 +11,11 @@ public enum CardType
 [CreateAssetMenu(fileName = "Card", menuName = "ScriptableObjects/SpawnManagerScriptableObject", order = 1)]
 public class CardData : ScriptableObject
 {
+    public string cardName;
     public GameObject cardItemGameObject;
     public CardType cardType;
     public int cardLevel;
     public float cardPower;
     public Material cardMaterial;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
