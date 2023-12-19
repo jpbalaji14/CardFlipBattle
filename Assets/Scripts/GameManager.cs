@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,7 +15,14 @@ public class CardCombo
     public string cardName;
     public float cardScore;
 }
-
+[Serializable]
+public class OpponentData
+{
+    public GameObject opponentGameObject;
+    public float opponentHealth;
+    public GameObject opponentHealthBarGameobject;
+    public TextMeshProUGUI opponentHealthText;
+}
 public class GameManager : MonoBehaviour
 {
     [HideInInspector] public static GameManager Instance;
@@ -23,15 +30,21 @@ public class GameManager : MonoBehaviour
     public List<CardCombo> cardCombo= new List<CardCombo>();
     public List<GameObject> cardGameObjectList = new List<GameObject>();
     public bool isPlayerTurn;
+    public int Max_opponentIndex;
+    public int currentOpponentIndex;
     public bool isOpponentTurn;
     public bool isOpponentInteracting=true;
     public bool isPlayerInteracting=true;
     public int OppSelectIndex=-1;
     public int OppSelectIndex2=-1;
     public float playerHealth;
-    public float opponentHealth; 
     public TextMeshProUGUI playerHealthText;
-    public TextMeshProUGUI opponentHealthText; 
+    //Opp1 Data
+    //public float opponentHealth; 
+    //public TextMeshProUGUI opponentHealthText;
+    //Opp2 Data
+    public List<OpponentData> opponentDataList;
+
     public GameObject gameResult;
     public GameObject playerWinText;
     public GameObject opponentWinText;
@@ -50,11 +63,24 @@ public class GameManager : MonoBehaviour
         };
     }
 
+    private void Start()
+    {
+        for(int i=0; i< Max_opponentIndex; i++)
+        {
+            opponentDataList[i].opponentGameObject.SetActive(true);
+            opponentDataList[i].opponentHealthBarGameobject.SetActive(true);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
         playerHealthText.text = playerHealth.ToString();
-        opponentHealthText.text = opponentHealth.ToString();
+        for(int i=0; i<Max_opponentIndex; i++)
+        {
+            opponentDataList[i].opponentHealthText.text = opponentDataList[i].opponentHealth.ToString();
+           
+        }
         if(playerHealth <= 0)
         {
             gameResult.SetActive(true);
@@ -63,14 +89,14 @@ public class GameManager : MonoBehaviour
             isPlayerInteracting = false;
             isOpponentInteracting = false;
         }
-        else if(opponentHealth <= 0)
-        {
-            gameResult.SetActive(true);
-            opponentHealth = 0;
-            playerWinText.SetActive(true);
-            isPlayerInteracting = false;
-            isOpponentInteracting = false;
-        }
+        //else if(opponentHealth <= 0)
+        //{
+        //    gameResult.SetActive(true);
+        //    opponentHealth = 0;
+        //    playerWinText.SetActive(true);
+        //    isPlayerInteracting = false;
+        //    isOpponentInteracting = false;
+        //}
 
         if (Input.GetMouseButtonDown(0) && isPlayerTurn && isPlayerInteracting)
         {
@@ -90,7 +116,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if(isOpponentTurn && isOpponentInteracting)
+        if(isOpponentTurn && isOpponentInteracting && currentOpponentIndex>0)
         {
             int randNum = Random.Range(0, cardGameObjectList.Count);
             if (OppSelectIndex == -1)
@@ -164,13 +190,70 @@ public class GameManager : MonoBehaviour
     {
         if (isPlayerTurn)
         {
-            opponentHealth -= cardCombo[0].cardScore;
-            opponentHealth -= cardCombo[1].cardScore;
+            //Give him choice to attack any of 3 players, then reduce the attacked player health.  NOTE::: For Now using random char to attack
+
+ 
+            int OppToAttackId = Random.Range(0, Max_opponentIndex);
+            opponentDataList[OppToAttackId].opponentHealth -= cardCombo[0].cardScore;
+            opponentDataList[OppToAttackId].opponentHealth -= cardCombo[1].cardScore;
         }
-        else
+        else    //Random Opponent Attack
         {
-            playerHealth -= cardCombo[0].cardScore;
-            playerHealth -= cardCombo[1].cardScore;
+            int playerToAttackId = Random.Range(0, 2);
+            switch (playerToAttackId)
+            {
+                case 0:
+                    playerHealth -= cardCombo[0].cardScore;
+                    playerHealth -= cardCombo[1].cardScore;
+                    break;
+
+                case 1:
+                    switch (currentOpponentIndex)
+                    {
+                        case 1:
+                            int randOpponent = Random.Range(0, 2);
+                            if (randOpponent == 0)
+                            {
+                                opponentDataList[1].opponentHealth -= cardCombo[0].cardScore;
+                                opponentDataList[1].opponentHealth -= cardCombo[1].cardScore;
+                            }
+                            else
+                            {
+                                opponentDataList[2].opponentHealth -= cardCombo[0].cardScore;
+                                opponentDataList[2].opponentHealth -= cardCombo[1].cardScore;
+                            }
+                            break;
+                            case 2:
+                            int randOpponent2 = Random.Range(0, 2);
+                            if (randOpponent2 == 0)
+                            {
+                                opponentDataList[0].opponentHealth -= cardCombo[0].cardScore;
+                                opponentDataList[0].opponentHealth -= cardCombo[1].cardScore;
+                            }
+                            else
+                            {
+                                opponentDataList[2].opponentHealth -= cardCombo[0].cardScore;
+                                opponentDataList[2].opponentHealth -= cardCombo[1].cardScore;
+                            }
+                            break;
+                            case 3:
+                            int randOpponent3 = Random.Range(0, 2);
+                            if (randOpponent3 == 0)
+                            {
+                                opponentDataList[0].opponentHealth -= cardCombo[0].cardScore;
+                                opponentDataList[0].opponentHealth -= cardCombo[1].cardScore;
+                            }
+                            else
+                            {
+                                opponentDataList[1].opponentHealth -= cardCombo[0].cardScore;
+                                opponentDataList[1].opponentHealth -= cardCombo[1].cardScore;
+                            }
+                            break;
+                    }
+                    
+                break;
+            }
+          
         }
 
 
@@ -202,12 +285,21 @@ public class GameManager : MonoBehaviour
             isPlayerTurn = false;
             isOpponentTurn = true;
             isOpponentInteracting=true;
+            currentOpponentIndex++;
         }
-        else
+        else if(isOpponentTurn)
         {
-            isOpponentTurn = false;
-            isPlayerTurn = true;
-            isPlayerInteracting = true;
+            if (currentOpponentIndex < Max_opponentIndex)
+            {
+                currentOpponentIndex++;
+                isOpponentInteracting = true;
+            }
+            else if (currentOpponentIndex == Max_opponentIndex)
+            {                                                     
+                isOpponentTurn = false;
+                isPlayerTurn = true;
+                isPlayerInteracting = true;
+            }
         }
     }
 
