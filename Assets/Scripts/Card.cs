@@ -74,9 +74,12 @@ public class Card : MonoBehaviour
             cardItemSpawnPoint.GetChild(0).transform.DOMove(GameManager.Instance.playerPosition.position, 1)
                 .SetEase(Ease.Linear);
         }
-        yield return new WaitForSeconds(1.5f);
-
+        yield return new WaitForSeconds(1f);
+        GameManager.Instance.OnCardMatched();
+        GameManager.Instance.OpponentInteractable();
         this.gameObject.SetActive(false);
+
+
     }
     public void CardNotMatched()
     {

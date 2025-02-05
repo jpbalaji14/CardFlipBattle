@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Card2
   m_EditorClassIdentifier: 
   cardName: Card2
-  cardItemGameObject: {fileID: 7784511403530027599, guid: 3a2dc5dba8ceb3c489866b9fae43b900,
+  cardItemGameObject: {fileID: 7784511403530027599, guid: ab263546d82373242b86c388eb863295,
     type: 3}
   cardType: 0
   cardLevel: 2
-  cardPower: 2
+  cardPower: 15
   cardMaterial: {fileID: 2100000, guid: fb0550d6ae8f6394c9ba4a6d405df2cb, type: 2}

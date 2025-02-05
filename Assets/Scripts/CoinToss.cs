@@ -9,6 +9,7 @@ public class CoinToss : MonoBehaviour
     public bool isHeadsSelected;
     public bool isTailsSelected;
     public GameObject tossButtonsGameObject;
+    public GameObject tossPlaneGameObject;
     public TextMeshProUGUI resultText;
     public GameObject resultGameObject;
     public void HeadsSelect()
@@ -72,8 +73,20 @@ public class CoinToss : MonoBehaviour
         this.GetComponent<Animator>().SetBool("Toss_Heads", false);
         this.GetComponent<Animator>().SetBool("Toss_Tails", false);
         this.GetComponent<Animator>().Play("Toss_Idle");
-        GameManager.Instance.isOpponentInteracting = true;
-        GameManager.Instance.isPlayerInteracting = true;
+       
+        GameManager.Instance.healthbarGameObject.SetActive(true);
+        tossPlaneGameObject.SetActive(false);
+
+        if (GameManager.Instance.isPlayerTurn)
+        {
+            GameManager.Instance.isPlayerInteracting = true;
+        }
+        else
+        {
+            GameManager.Instance.isOpponentInteracting = true;
+        }
+      
         this.gameObject.SetActive(false);
+      
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using TMPro;
 using Unity.Burst.CompilerServices;
+using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 [Serializable]
@@ -35,6 +36,7 @@ public class GameManager : MonoBehaviour
     public bool isOpponentTurn;
     public bool isOpponentInteracting=true;
     public bool isPlayerInteracting=true;
+    public bool isSinglePlayerGame = true;
     public int OppSelectIndex=-1;
     public int OppSelectIndex2=-1;
     public float playerHealth;
@@ -52,6 +54,7 @@ public class GameManager : MonoBehaviour
     public Transform opponentAttackPoint;
     public Transform playerPosition;
     public Transform opponentPosition;
+    public GameObject healthbarGameObject;
     // Start is called before the first frame update
     void Awake()
     {
@@ -65,6 +68,11 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        if (isSinglePlayerGame)
+        {
+            Max_opponentIndex = opponentDataList.Count;
+            currentOpponentIndex = opponentDataList.Count;
+        }
         for(int i=0; i< Max_opponentIndex; i++)
         {
             opponentDataList[i].opponentGameObject.SetActive(true);
@@ -89,14 +97,21 @@ public class GameManager : MonoBehaviour
             isPlayerInteracting = false;
             isOpponentInteracting = false;
         }
-        //else if(opponentHealth <= 0)
-        //{
-        //    gameResult.SetActive(true);
-        //    opponentHealth = 0;
-        //    playerWinText.SetActive(true);
-        //    isPlayerInteracting = false;
-        //    isOpponentInteracting = false;
-        //}
+        if (isSinglePlayerGame)
+        {
+            if (opponentDataList[0].opponentHealth <= 0)
+            {
+                gameResult.SetActive(true);
+                opponentDataList[0].opponentHealth = 0;
+                playerWinText.SetActive(true);
+                isPlayerInteracting = false;
+                isOpponentInteracting = false;
+            }
+        }
+        else
+        {
+            //Multiplayer check
+        }
 
         if (Input.GetMouseButtonDown(0) && isPlayerTurn && isPlayerInteracting)
         {
@@ -118,30 +133,47 @@ public class GameManager : MonoBehaviour
 
         if(isOpponentTurn && isOpponentInteracting && currentOpponentIndex>0)
         {
-            int randNum = Random.Range(0, cardGameObjectList.Count);
-            if (OppSelectIndex == -1)
+            if (isSinglePlayerGame)
             {
-                OppSelectIndex = randNum;
+                int randNum = Random.Range(0, cardGameObjectList.Count);
+                Card cardItem = cardGameObjectList[randNum].GetComponent<Card>();
+                if (cardItem != null && cardCombo.Count == 0)
+                {
+                    cardItem.CardSelect();
+                }
+                else if (cardItem != null && cardCombo.Count > 0 && cardCombo[0].cardTransform != cardItem.transform.parent)
+                {
+                    cardItem.CardSelect();
+                }
+                isOpponentInteracting = false;
             }
             else
             {
-                if(OppSelectIndex == randNum)
+                int randNum = Random.Range(0, cardGameObjectList.Count);
+                if (OppSelectIndex == -1)
                 {
-                    if(randNum == cardGameObjectList.Count - 1)
-                    {
-                      OppSelectIndex2 = randNum-1;
-                    }
-                    else
-                    {
-                        OppSelectIndex2 = randNum+1;
-                    }
-
+                    OppSelectIndex = randNum;
                 }
                 else
                 {
-                    OppSelectIndex2 = randNum;
+                    if (OppSelectIndex == randNum)
+                    {
+                        if (randNum == cardGameObjectList.Count - 1)
+                        {
+                            OppSelectIndex2 = randNum - 1;
+                        }
+                        else
+                        {
+                            OppSelectIndex2 = randNum + 1;
+                        }
+
+                    }
+                    else
+                    {
+                        OppSelectIndex2 = randNum;
+                    }
                 }
-            }
+
             Card cardItem = cardGameObjectList[randNum].GetComponent<Card>();
             if (cardItem != null && cardCombo.Count == 0)
             {
@@ -154,6 +186,7 @@ public class GameManager : MonoBehaviour
                 OppSelectIndex2 = -1;
             }
             isOpponentInteracting = false;
+            }
         }
     }
 
@@ -166,10 +199,6 @@ public class GameManager : MonoBehaviour
             {
                 StartCoroutine(cardCombo[0].cardScript.CardMatched());
                 StartCoroutine(cardCombo[1].cardScript.CardMatched());
-
-                Invoke(nameof(OnCardMatched), 1f);
-                
-                Invoke(nameof(OpponentInteractable), 2f);
             }
             else
             {
@@ -186,7 +215,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void OnCardMatched()
+    public void OnCardMatched()
     {
         if (isPlayerTurn)
         {
@@ -194,66 +223,74 @@ public class GameManager : MonoBehaviour
 
  
             int OppToAttackId = Random.Range(0, Max_opponentIndex);
+            Debug.Log("Opp attack id" + OppToAttackId);
             opponentDataList[OppToAttackId].opponentHealth -= cardCombo[0].cardScore;
             opponentDataList[OppToAttackId].opponentHealth -= cardCombo[1].cardScore;
         }
         else    //Random Opponent Attack
         {
-            int playerToAttackId = Random.Range(0, 2);
-            switch (playerToAttackId)
+            if (isSinglePlayerGame)
             {
-                case 0:
-                    playerHealth -= cardCombo[0].cardScore;
-                    playerHealth -= cardCombo[1].cardScore;
-                    break;
-
-                case 1:
-                    switch (currentOpponentIndex)
-                    {
-                        case 1:
-                            int randOpponent = Random.Range(0, 2);
-                            if (randOpponent == 0)
-                            {
-                                opponentDataList[1].opponentHealth -= cardCombo[0].cardScore;
-                                opponentDataList[1].opponentHealth -= cardCombo[1].cardScore;
-                            }
-                            else
-                            {
-                                opponentDataList[2].opponentHealth -= cardCombo[0].cardScore;
-                                opponentDataList[2].opponentHealth -= cardCombo[1].cardScore;
-                            }
-                            break;
-                            case 2:
-                            int randOpponent2 = Random.Range(0, 2);
-                            if (randOpponent2 == 0)
-                            {
-                                opponentDataList[0].opponentHealth -= cardCombo[0].cardScore;
-                                opponentDataList[0].opponentHealth -= cardCombo[1].cardScore;
-                            }
-                            else
-                            {
-                                opponentDataList[2].opponentHealth -= cardCombo[0].cardScore;
-                                opponentDataList[2].opponentHealth -= cardCombo[1].cardScore;
-                            }
-                            break;
-                            case 3:
-                            int randOpponent3 = Random.Range(0, 2);
-                            if (randOpponent3 == 0)
-                            {
-                                opponentDataList[0].opponentHealth -= cardCombo[0].cardScore;
-                                opponentDataList[0].opponentHealth -= cardCombo[1].cardScore;
-                            }
-                            else
-                            {
-                                opponentDataList[1].opponentHealth -= cardCombo[0].cardScore;
-                                opponentDataList[1].opponentHealth -= cardCombo[1].cardScore;
-                            }
-                            break;
-                    }
-                    
-                break;
+                playerHealth -= cardCombo[0].cardScore;
+                playerHealth -= cardCombo[1].cardScore;
             }
-          
+            else
+            {
+                int playerToAttackId = Random.Range(0, 2);
+                switch (playerToAttackId)
+                {
+                    case 0:
+                        playerHealth -= cardCombo[0].cardScore;
+                        playerHealth -= cardCombo[1].cardScore;
+                        break;
+
+                    case 1:
+                        switch (currentOpponentIndex)
+                        {
+                            case 1:
+                                int randOpponent = Random.Range(0, 2);
+                                if (randOpponent == 0)
+                                {
+                                    opponentDataList[1].opponentHealth -= cardCombo[0].cardScore;
+                                    opponentDataList[1].opponentHealth -= cardCombo[1].cardScore;
+                                }
+                                else
+                                {
+                                    opponentDataList[2].opponentHealth -= cardCombo[0].cardScore;
+                                    opponentDataList[2].opponentHealth -= cardCombo[1].cardScore;
+                                }
+                                break;
+                            case 2:
+                                int randOpponent2 = Random.Range(0, 2);
+                                if (randOpponent2 == 0)
+                                {
+                                    opponentDataList[0].opponentHealth -= cardCombo[0].cardScore;
+                                    opponentDataList[0].opponentHealth -= cardCombo[1].cardScore;
+                                }
+                                else
+                                {
+                                    opponentDataList[2].opponentHealth -= cardCombo[0].cardScore;
+                                    opponentDataList[2].opponentHealth -= cardCombo[1].cardScore;
+                                }
+                                break;
+                            case 3:
+                                int randOpponent3 = Random.Range(0, 2);
+                                if (randOpponent3 == 0)
+                                {
+                                    opponentDataList[0].opponentHealth -= cardCombo[0].cardScore;
+                                    opponentDataList[0].opponentHealth -= cardCombo[1].cardScore;
+                                }
+                                else
+                                {
+                                    opponentDataList[1].opponentHealth -= cardCombo[0].cardScore;
+                                    opponentDataList[1].opponentHealth -= cardCombo[1].cardScore;
+                                }
+                                break;
+                        }
+
+                        break;
+                }
+            }
         }
 
 
@@ -264,9 +301,12 @@ public class GameManager : MonoBehaviour
         {
             cardSpawner.CreateSpawnPoints();
         }
-        cardCombo.Clear();
+        Invoke(nameof(ClearCardCombo), 0.5f);
     }
-    
+    void ClearCardCombo()
+    {
+           cardCombo.Clear();
+    }
     public void OpponentInteractable()
     {
         if (isOpponentTurn)
@@ -285,7 +325,10 @@ public class GameManager : MonoBehaviour
             isPlayerTurn = false;
             isOpponentTurn = true;
             isOpponentInteracting=true;
-            currentOpponentIndex++;
+            if (!isSinglePlayerGame)
+            {
+                currentOpponentIndex++;
+            }
         }
         else if(isOpponentTurn)
         {
@@ -293,9 +336,11 @@ public class GameManager : MonoBehaviour
             {
                 currentOpponentIndex++;
                 isOpponentInteracting = true;
+                Debug.Log("Less");
             }
             else if (currentOpponentIndex == Max_opponentIndex)
-            {                                                     
+            {
+                Debug.Log("Equal");
                 isOpponentTurn = false;
                 isPlayerTurn = true;
                 isPlayerInteracting = true;
