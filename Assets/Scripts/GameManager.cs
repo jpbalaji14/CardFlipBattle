@@ -6,6 +6,7 @@ using TMPro;
 using Unity.Burst.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 [Serializable]
 public class CardCombo 
@@ -55,6 +56,10 @@ public class GameManager : MonoBehaviour
     public Transform playerPosition;
     public Transform opponentPosition;
     public GameObject healthbarGameObject;
+    public GameObject tossCoinGameObject;
+    public GameObject turnChangeGameObject;
+    public GameObject menuGameObject;
+    public bool canShowResult;
     // Start is called before the first frame update
     void Awake()
     {
@@ -91,21 +96,24 @@ public class GameManager : MonoBehaviour
         }
         if(playerHealth <= 0)
         {
-            gameResult.SetActive(true);
-            playerHealth = 0;
-            opponentWinText.SetActive(true);
-            isPlayerInteracting = false;
-            isOpponentInteracting = false;
+           
+                gameResult.SetActive(true);
+                playerHealth = 0;
+                opponentWinText.SetActive(true);
+                isPlayerInteracting = false;
+                isOpponentInteracting = false;
         }
         if (isSinglePlayerGame)
         {
+
             if (opponentDataList[0].opponentHealth <= 0)
             {
-                gameResult.SetActive(true);
-                opponentDataList[0].opponentHealth = 0;
-                playerWinText.SetActive(true);
-                isPlayerInteracting = false;
-                isOpponentInteracting = false;
+                    gameResult.SetActive(true);
+                    opponentDataList[0].opponentHealth = 0;
+                    playerWinText.SetActive(true);
+                    isPlayerInteracting = false;
+                    isOpponentInteracting = false;
+                    canShowResult = false;
             }
         }
         else
@@ -131,18 +139,50 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if(isOpponentTurn && isOpponentInteracting && currentOpponentIndex>0)
+        if(isOpponentTurn && isOpponentInteracting && currentOpponentIndex>0 && !tossCoinGameObject.activeInHierarchy)
         {
+            
             if (isSinglePlayerGame)
             {
                 int randNum = Random.Range(0, cardGameObjectList.Count);
+
+                if (cardCombo.Count == 0)
+                {
+                    OppSelectIndex = -1;
+                    OppSelectIndex2 = -1;
+                    OppSelectIndex = randNum;
+                }
+                else
+                {
+                    if (randNum == OppSelectIndex)
+                    {
+                        if (randNum == cardGameObjectList.Count - 1)
+                        {
+                            randNum = randNum - 1;
+                            OppSelectIndex2 = randNum;
+                        }
+                        else
+                        {
+                            randNum = randNum + 1;
+                            OppSelectIndex2 = randNum;
+                        }
+                    }
+                    else
+                    {
+                        OppSelectIndex2 = randNum;
+                    }
+                }
+                
+                 Debug.Log("Chosen RaND cARD" + randNum);
                 Card cardItem = cardGameObjectList[randNum].GetComponent<Card>();
                 if (cardItem != null && cardCombo.Count == 0)
                 {
+                    Debug.Log("Enable opp interact 1.5");
                     cardItem.CardSelect();
                 }
                 else if (cardItem != null && cardCombo.Count > 0 && cardCombo[0].cardTransform != cardItem.transform.parent)
                 {
+                    Debug.Log("Enable opp interact 1");
                     cardItem.CardSelect();
                 }
                 isOpponentInteracting = false;
@@ -204,14 +244,26 @@ public class GameManager : MonoBehaviour
             {
                cardCombo[0].cardScript.CardNotMatched();
                cardCombo[1].cardScript.CardNotMatched();
-                cardCombo.Clear();
-                Invoke(nameof(TurnChange), 2f);
+                Debug.Log("Clear combo bef");
+               cardCombo.Clear();
+                Debug.Log("Clear combo after");
+                turnChangeGameObject.SetActive(true);
+                if (isPlayerTurn)
+                {
+                    turnChangeGameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Opponent Turn";
+                }
+                else
+                {
+                    turnChangeGameObject.GetComponentInChildren<TextMeshProUGUI>().text = "Player Turn";
+                }
+                Invoke(nameof(TurnChange), 1f);
             }
             
         }
-        else if(cardCombo.Count==1 && isOpponentTurn)
+        else if(cardCombo.Count<2 && isOpponentTurn)
         {
-           Invoke(nameof(OpponentInteractable), 1f);
+            Debug.Log("Enable opp interact 4");
+            Invoke(nameof(OpponentInteractable), 1f);
         }
     }
 
@@ -301,17 +353,22 @@ public class GameManager : MonoBehaviour
         {
             cardSpawner.CreateSpawnPoints();
         }
-        Invoke(nameof(ClearCardCombo), 0.5f);
+       // yield return new WaitForSeconds(0.5f);
+       Invoke(nameof(ClearCardCombo),1f);
+       
     }
-    void ClearCardCombo()
+    public void ClearCardCombo()
     {
-           cardCombo.Clear();
+        cardCombo.Clear();
+        Debug.Log("Clear combo on match");
+        OpponentInteractable();
     }
     public void OpponentInteractable()
     {
         if (isOpponentTurn)
         {
             isOpponentInteracting = true;
+            Debug.Log("Enable opp interact final");
         }
         else
         {
@@ -320,6 +377,7 @@ public class GameManager : MonoBehaviour
     }
     private void TurnChange()
     {
+        turnChangeGameObject.SetActive(false);
         if (isPlayerTurn)
         {
             isPlayerTurn = false;
@@ -332,6 +390,8 @@ public class GameManager : MonoBehaviour
         }
         else if(isOpponentTurn)
         {
+            OppSelectIndex = -1;
+            OppSelectIndex2 = -1;
             if (currentOpponentIndex < Max_opponentIndex)
             {
                 currentOpponentIndex++;
@@ -348,4 +408,49 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+    public void OnMenuClick()
+    {
+        menuGameObject.SetActive(true);
+        playerHealth = 100;
+        opponentDataList[0].opponentHealth = 100;
+        playerHealthText.text = playerHealth.ToString();
+        opponentDataList[0].opponentHealthText.text = opponentDataList[0].opponentHealth.ToString();
+
+        healthbarGameObject.SetActive(false);
+      gameResult.gameObject.SetActive(false);
+        playerWinText.gameObject.SetActive(false);
+        opponentWinText.gameObject.SetActive(false);
+        
+        tossCoinGameObject.SetActive(true);
+        tossCoinGameObject.GetComponent<CoinToss>().tossPlaneGameObject.SetActive(true);
+        tossCoinGameObject.GetComponent<CoinToss>().resultGameObject.SetActive(false);
+        tossCoinGameObject.GetComponent<CoinToss>().tossHeaderText.SetActive(true);
+        tossCoinGameObject.GetComponent<CoinToss>().tossButtonsGameObject.SetActive(true);
+     
+      
+        OppSelectIndex = -1;
+        OppSelectIndex2 = -1;
+        if (isSinglePlayerGame)
+        {
+            Max_opponentIndex = opponentDataList.Count;
+            currentOpponentIndex = opponentDataList.Count;
+        }
+        for (int i = 0; i < Max_opponentIndex; i++)
+        {
+            opponentDataList[i].opponentGameObject.SetActive(true);
+            opponentDataList[i].opponentHealthBarGameobject.SetActive(true);
+        }
+        cardGameObjectList.Clear();
+        cardCombo.Clear();
+        cardSpawner.CreateSpawnPoints();
+    }
+    public void OnPlay()
+    {
+        menuGameObject.SetActive(false);
+    }
+    public void OnQuit()
+    {
+        Application.Quit();
+    }
 }

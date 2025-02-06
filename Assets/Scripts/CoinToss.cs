@@ -12,6 +12,8 @@ public class CoinToss : MonoBehaviour
     public GameObject tossPlaneGameObject;
     public TextMeshProUGUI resultText;
     public GameObject resultGameObject;
+    public GameObject tossHeaderText;
+    public int randTossNum;
     public void HeadsSelect()
     {
         isHeadsSelected = true;
@@ -25,13 +27,33 @@ public class CoinToss : MonoBehaviour
     void TossSelect()
     {
         tossButtonsGameObject.SetActive(false);
-
-        int randNum = Random.Range(0, 2);
-        if(randNum == 0)
+        tossHeaderText.SetActive(false);
+        randTossNum = Random.Range(0, 2);
+        if(randTossNum == 0)
         {
             Debug.Log("Game Chose Heads");
             this.GetComponent<Animator>().SetBool("Toss_Heads", true);
-            if(isHeadsSelected)
+           
+        }
+        else
+        {
+            Debug.Log("Game Chose Tails");
+            this.GetComponent<Animator>().SetBool("Toss_Tails", true);
+          
+        }
+        StartCoroutine(CoinDisable());
+    }
+
+    IEnumerator CoinDisable()
+    {
+        yield return new WaitForSeconds(1.2f);
+        this.GetComponent<Animator>().SetBool("Toss_Heads", false);
+        this.GetComponent<Animator>().SetBool("Toss_Tails", false);
+       // this.GetComponent<Animator>().Play("Toss_Idle");
+        yield return new WaitForSeconds(0.2f);
+        if (randTossNum == 0)
+        {
+            if (isHeadsSelected)
             {
                 GameManager.Instance.isPlayerTurn = true;
                 GameManager.Instance.isOpponentTurn = false;
@@ -46,8 +68,6 @@ public class CoinToss : MonoBehaviour
         }
         else
         {
-            Debug.Log("Game Chose Tails");
-            this.GetComponent<Animator>().SetBool("Toss_Tails", true);
             if (isHeadsSelected)
             {
                 GameManager.Instance.isOpponentTurn = true;
@@ -62,21 +82,15 @@ public class CoinToss : MonoBehaviour
             }
         }
         resultGameObject.SetActive(true);
-        Invoke("CoinDisable", 3);
-    }
 
-    void CoinDisable()
-    {
+        yield return new WaitForSeconds(1f);
+
+
         resultGameObject.SetActive(false);
         isHeadsSelected = false;
         isTailsSelected = false;
-        this.GetComponent<Animator>().SetBool("Toss_Heads", false);
-        this.GetComponent<Animator>().SetBool("Toss_Tails", false);
-        this.GetComponent<Animator>().Play("Toss_Idle");
-       
         GameManager.Instance.healthbarGameObject.SetActive(true);
         tossPlaneGameObject.SetActive(false);
-
         if (GameManager.Instance.isPlayerTurn)
         {
             GameManager.Instance.isPlayerInteracting = true;

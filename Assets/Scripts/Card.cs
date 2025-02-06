@@ -24,10 +24,13 @@ public class Card : MonoBehaviour
         cardLevel = cardDataSo.cardLevel;
         cardMat.material = cardDataSo.cardMaterial;
         cardGameObject = Instantiate(cardDataSo.cardItemGameObject, cardItemSpawnPoint);
+        cardGameObject.transform.localPosition = new Vector3(0, -2, 0);
     }
 
     public void CardSelect()
     {
+        //cardGameObject.transform.localPosition = new Vector3(0, -2, 0);
+        this.transform.DORotate(new Vector3(0, 0, 180), 0.5f);
         CardHighlight.SetActive(true);
         CardCombo combo = new CardCombo();
         combo.cardName = this.gameObject.name;
@@ -36,18 +39,28 @@ public class Card : MonoBehaviour
         combo.cardTransform = this.gameObject.transform.parent;
         combo.cardScore = cardPower;
         GameManager.Instance.cardCombo.Add(combo);
-        Debug.Log(combo.cardName + "Selected");
+        Debug.Log(combo.cardName + "Selected" + GameManager.Instance.isOpponentTurn);
         if (GameManager.Instance.isOpponentTurn)
         {
-            Invoke(nameof(CardValidation), 1.5f);
+            Debug.Log("Enable opp interact 2");
+            StartCoroutine(CardValidation(1));
         }
         else
         {
-            GameManager.Instance.CardMatchValidation();
+            if (GameManager.Instance.cardCombo.Count == 2)
+            {
+                StartCoroutine(CardValidation(0.5f));
+            }
+            else
+            {
+                GameManager.Instance.CardMatchValidation();
+            }
         }
     }
-    void CardValidation()
+    IEnumerator CardValidation(float time)
     {
+        yield return new WaitForSeconds(time);
+        Debug.Log("Enable opp interact 3");
         GameManager.Instance.CardMatchValidation();
     }
     public IEnumerator CardMatched()
@@ -76,13 +89,14 @@ public class Card : MonoBehaviour
         }
         yield return new WaitForSeconds(1f);
         GameManager.Instance.OnCardMatched();
-        GameManager.Instance.OpponentInteractable();
+      
         this.gameObject.SetActive(false);
 
 
     }
     public void CardNotMatched()
     {
+        this.transform.DORotate(new Vector3(0, 0, 0), 0.5f);
         CardHighlight.SetActive(false);
         Debug.Log("Card Not matched");
     }
